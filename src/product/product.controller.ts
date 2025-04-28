@@ -1,20 +1,35 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Post,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { CreateProductDto } from './dtos/create-product.dto';
+import { ProductService } from './product.service';
+import { GetProductParam } from './dtos/get-product-param.dto';
 
 @Controller('products')
 export class ProductController {
+  @Inject()
+  private readonly productService: ProductService;
+
   @Get()
   listProducts() {
-    return 'list of product';
+    return this.productService.findAll();
   }
 
   @Get('/:id')
-  getProductById(@Param('id') id: string) {
-    return 'product';
+  @UsePipes(new ValidationPipe({ transform: true }))
+  getProductById(@Param() getProductParam: GetProductParam) {
+    return this.productService.findOne(getProductParam.id);
   }
 
   @Post()
   createProduct(@Body() body: CreateProductDto) {
-    return 'product created';
+    return this.productService.create(body);
   }
 }
